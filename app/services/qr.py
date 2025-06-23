@@ -1,14 +1,18 @@
 import qrcode
 import base64
 import hashlib
+import os
+from dotenv import load_dotenv
 from cryptography.fernet import Fernet
 
-password = "grupocontech"
+load_dotenv()
+
+password = os.getenv("PASSWORD")
 key = base64.urlsafe_b64encode(hashlib.sha256(password.encode()).digest())
 cipher = Fernet(key)
 
 class Qr:
-    def __init__(self, base_url):
+    def __init__(self, base_url: str = None):
         self.base_url = base_url
     
     def encode(self, text: str):

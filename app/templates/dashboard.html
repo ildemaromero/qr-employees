@@ -71,7 +71,7 @@ document.getElementById('qrForm').addEventListener('submit', async function(e) {
             qrImage.src = imageUrl;
             qrResult.classList.remove('hidden');
         } else {
-            throw new Error('Error generating QR code');
+            throw new Error('No se encontró el empleado');
         }
     } catch (error) {
         errorMessage.textContent = 'Error al generar el código QR. Por favor, inténtalo de nuevo.';

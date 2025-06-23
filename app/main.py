@@ -3,8 +3,9 @@ from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from . import database, models, schemas, crud, auth
 from .services.qr import Qr
+from .services.employee import EmployeeService
+from . import database, models, schemas, crud, auth
 
 BASE_URL = "127.0.0.1:5000/employee-data/"
 
@@ -73,24 +74,10 @@ async def dashboard(
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
-    print("hey here")
-    cedulas = crud.get_cedulas(db)
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "user": current_user,
-        "cedulas": cedulas
     })
-
-@app.post("/cedula")
-async def create_cedula(
-    request: Request,
-    db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(auth.get_current_user)
-):
-    form_data = await request.form()
-    cedula_number = form_data.get("cedula_number")
-    crud.create_cedula(db, schemas.CedulaCreate(cedula_number=cedula_number))
-    return RedirectResponse(url="/dashboard", status_code=303)
 
 @app.get("/users", response_class=HTMLResponse)
 async def user_management(
@@ -118,37 +105,44 @@ async def logout():
 @app.post("/generate-qr")
 async def generate_qr(
     request: Request,
-    # db: Session = Depends(database.get_db),
-    # current_user: models.User = Depends(auth.get_current_user)
+    current_user: models.User = Depends(auth.get_current_user)
 ):
-    # if not current_user.is_admin:
-    #     raise HTTPException(status_code=403, detail="Forbidden")
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    
+    scheme = request.url.scheme
+    hostname = request.url.hostname
+    port = request.url.port
     
     form_data = await request.form()
     document_number = form_data.get("document_number")
+
+    service = EmployeeService()
+    cod_emp = service.get_employee_code(document_number)
     
-    qr = Qr(BASE_URL)
-    qr_image, qr_path = qr.generate(document_number)
+    if not cod_emp:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado.")
+
+    if port:
+        base_url = f"{scheme}://{hostname}:{port}/employee-data/"
+    else:
+        base_url = f"{scheme}://{hostname}/employee-data/"
+    
+
+    qr = Qr(base_url)
+    qr_image, qr_path = qr.generate(cod_emp)
     
     return FileResponse(qr_path, media_type="image/png", filename=qr_image)
 
-@app.get("/employee-data/{encoded_document}")
+@app.get("/employee-data/{encoded_emp_codet}")
 async def get_employee_data(
     request: Request,
-    encoded_document: str
+    encoded_emp_codet: str
 ):
-    qr = Qr(BASE_URL)
-    document_number = qr.decode(encoded_document)
+    emp_code = Qr().decode(encoded_emp_codet)
     
-    # Mock data - replace with your actual database query
-    employee_data = {
-        "codigo_trabajador": "EMP-12345",
-        "nombre_completo": "Juan Pérez",
-        "ci": document_number,
-        "cargo": "Desarrollador Senior",
-        "sede": "Oficina Central",
-        "status": "Activo"
-    }
+    service = EmployeeService()
+    employee_data = service.get_employee_data(emp_code)
     
     return templates.TemplateResponse("employee_data.html", {
         "request": request,

@@ -17,13 +17,3 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
-
-def create_cedula(db: Session, cedula: schemas.CedulaCreate):
-    db_cedula = models.Cedula(cedula_number=cedula.cedula_number)
-    db.add(db_cedula)
-    db.commit()
-    db.refresh(db_cedula)
-    return db_cedula
-
-def get_cedulas(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Cedula).offset(skip).limit(limit).all()

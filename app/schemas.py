@@ -10,12 +10,3 @@ class User(UserCreate):
 
     class Config:
         from_attributes = True
-
-class CedulaCreate(BaseModel):
-    cedula_number: str
-
-class Cedula(CedulaCreate):
-    id: int
-
-    class Config:
-        from_attributes = True
