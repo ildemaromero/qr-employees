@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Datos del Empleado{% endblock %}
+
+{% block content %}
+<div class="flex">
+
+    <!-- Main Content Area -->
+    <main class="flex justify-center p-8 p-8 m-auto">
+        <div class="bg-white rounded-lg shadow-xl p-10 max-w-5xl mx-auto">
+            <h1 class="text-3xl font-bold text-main-blue mb-8">Datos del Empleado</h1>
+            
+            <div class="space-y-6 p-8 bg-gray-50 rounded-xl">
+                <!-- Section with more spacing -->
+                <div class="pb-6 space-y-6">
+                    <h2 class="text-xl font-semibold text-main-blue mb-4">Información Básica</h2>
+                    <!-- Grid with larger gap and text -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-lg">
+                        <p><span class="font-medium">Código Trabajador:</span> {{ employee_data.codigo_trabajador }}</p>
+                        <p><span class="font-medium">Nombre y Apellido:</span> {{ employee_data.nombre_completo }}</p>
+                        <p><span class="font-medium">Cédula:</span> {{ employee_data.ci }}</p>
+                        <p><span class="font-medium">Cargo:</span> {{ employee_data.cargo }}</p>
+                        <p><span class="font-medium">Sede:</span> {{ employee_data.sede }}</p>
+                        <p class="md:col-span-2">
+                            <span class="font-medium">Status:</span> 
+                            <span class="ml-2 px-3 py-1.5 rounded-md text-sm font-medium 
+                                {% if employee_data.status == 'Activo' %}bg-green-100 text-green-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ employee_data.status }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

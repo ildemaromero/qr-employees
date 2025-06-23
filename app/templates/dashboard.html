@@ -14,17 +14,70 @@
             
             <div class="mb-8">
                 <h2 class="text-xl font-semibold text-main-blue mb-3">Introduce la Cédula</h2>
-                <form method="post" action="/cedula" class="space-y-4">
+                <form id="qrForm" class="space-y-4">
                     <div>
-                        <input type="text" name="cedula_number" placeholder="Número de Cédula" required
+                        <input type="text" name="document_number" id="document_number" placeholder="Número de Cédula" required
                                class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-main-blue">
                     </div>
                     <button type="submit" class="bg-main-blue text-white px-4 py-2 rounded hover:bg-main-blue-dark transition">
                         Generar QR
                     </button>
                 </form>
+
+                <!-- QR Code Display Area -->
+                <div id="qrResult" class="mt-6 hidden">
+                    <h3 class="text-lg font-semibold text-main-blue mb-2">QR Generado:</h3>
+                    <div class="p-4 border rounded-md bg-gray-50 flex justify-center">
+                        <img id="qrImage" src="" alt="QR Code" class="w-64 h-64">
+                    </div>
+                    <p class="mt-2 text-sm text-gray-600">Escanea este código QR para acceder a la información</p>
+                </div>
+
+                <!-- Error Message Area -->
+                <div id="errorMessage" class="mt-4 text-red-500 hidden"></div>
             </div>
         </div>
     </main>
 </div>
+
+<script>
+document.getElementById('qrForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const documentNumber = document.getElementById('document_number').value;
+    const qrResult = document.getElementById('qrResult');
+    const qrImage = document.getElementById('qrImage');
+    const errorMessage = document.getElementById('errorMessage');
+    
+    // Hide previous results/errors
+    qrResult.classList.add('hidden');
+    errorMessage.classList.add('hidden');
+    
+    try {
+        const response = await fetch('/generate-qr', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `document_number=${encodeURIComponent(documentNumber)}`
+        });
+        
+        if (response.ok) {
+            // Create object URL from the response blob
+            const blob = await response.blob();
+            const imageUrl = URL.createObjectURL(blob);
+            
+            // Display the QR code
+            qrImage.src = imageUrl;
+            qrResult.classList.remove('hidden');
+        } else {
+            throw new Error('Error generating QR code');
+        }
+    } catch (error) {
+        errorMessage.textContent = 'Error al generar el código QR. Por favor, inténtalo de nuevo.';
+        errorMessage.classList.remove('hidden');
+        console.error('Error:', error);
+    }
+});
+</script>
 {% endblock %}
