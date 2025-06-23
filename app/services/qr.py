@@ -37,7 +37,7 @@ class Qr:
         qr.add_data(url_to_encode)
         qr.make(fit=True)
         
-        qr_name = f"{document_number}.png"
+        qr_name = f"{document_number.strip()}.png"
         qr_path = f"codes/{qr_name}"
         
         img = qr.make_image(fill_color="black", back_color="white")

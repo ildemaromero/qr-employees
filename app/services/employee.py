@@ -9,8 +9,8 @@ class EmployeeService:
     def __init__(self):
         load_dotenv()
         
-        driver = os.getenv("RDBMS")  # e.g. "ODBC Driver 17 for SQL Server"
-        server = os.getenv("DB_HOST")
+        driver = os.getenv("DRIVER")
+        server = os.getenv("SERVER")
         database = os.getenv("DB_NAME")
         username = os.getenv("DB_USER")
         password = os.getenv("DB_PASSWORD")
