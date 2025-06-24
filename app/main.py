@@ -7,8 +7,6 @@ from .services.qr import Qr
 from .services.employee import EmployeeService
 from . import database, models, schemas, crud, auth
 
-BASE_URL = "127.0.0.1:8000/employee-data/"
-
 class ProxyHeaderFixMiddleware:
     def __init__(self, app):
         self.app = app
@@ -29,10 +27,10 @@ class ProxyHeaderFixMiddleware:
         await self.app(scope, receive, send)
 
 
-app = FastAPI(root_path='/sistema-qr')
+app = FastAPI()
 models.Base.metadata.create_all(bind=database.engine)
 
-app.mount("/static", StaticFiles(directory="/home/projects/qr-employees/app/static"), name="static")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
 
