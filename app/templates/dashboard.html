@@ -54,13 +54,16 @@ document.getElementById('qrForm').addEventListener('submit', async function(e) {
     errorMessage.classList.add('hidden');
     
     try {
-        const response = await fetch('/generate-qr', {
+
+        const basePath = "{{ request.scope.get('root_path', '') }}";
+
+        const response = await fetch(`${basePath}/generate-qr`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: `document_number=${encodeURIComponent(documentNumber)}`
-        });
+        });        
         
         if (response.ok) {
             // Create object URL from the response blob
