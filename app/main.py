@@ -118,7 +118,8 @@ async def user_management(
 
 @app.get("/logout")
 async def logout(request: Request):
-    response = RedirectResponse(url=request.url_for(""))
+    root_path = request.scope.get("root_path", "")
+    response = RedirectResponse(url=root_path )
     response.delete_cookie("access_token")
     response.delete_cookie("remember_me")
     return response
