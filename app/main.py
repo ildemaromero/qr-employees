@@ -27,7 +27,7 @@ class ProxyHeaderFixMiddleware:
         await self.app(scope, receive, send)
 
 
-app = FastAPI()
+app = FastAPI(root_path='/sistema-qr')
 models.Base.metadata.create_all(bind=database.engine)
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
