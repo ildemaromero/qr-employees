@@ -32,7 +32,7 @@ class ProxyHeaderFixMiddleware:
 app = FastAPI(root_path='/sistema-qr')
 models.Base.metadata.create_all(bind=database.engine)
 
-app.mount("/qr_static_media", StaticFiles(directory="app/static"), name="static")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
 
