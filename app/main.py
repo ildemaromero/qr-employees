@@ -7,13 +7,34 @@ from .services.qr import Qr
 from .services.employee import EmployeeService
 from . import database, models, schemas, crud, auth
 
-BASE_URL = "127.0.0.1:5000/employee-data/"
+BASE_URL = "127.0.0.1:8000/employee-data/"
 
-app = FastAPI()
+class ProxyHeaderFixMiddleware:
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        headers = dict(scope.get("headers", []))
+        headers = {k.decode(): v.decode() for k, v in headers.items()}
+
+        forwarded_host = headers.get("x-forwarded-host")
+        if forwarded_host:
+            # Use only the first value if multiple hosts are present
+            clean_host = forwarded_host.split(",")[0].strip()
+            headers["host"] = clean_host
+            scope["headers"] = [(k.encode(), v.encode()) for k, v in headers.items()]
+            scope["server"] = (clean_host, 443)
+            scope["scheme"] = headers.get("x-forwarded-proto", "https")
+
+        await self.app(scope, receive, send)
+
+
+app = FastAPI(root_path='/sistema-qr')
 models.Base.metadata.create_all(bind=database.engine)
 
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount("/static/", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
+
 
 # Add current_user to template context for all responses
 def add_current_user_to_context(request: Request):
@@ -151,8 +172,11 @@ async def get_employee_data(
 
 @app.post("/create-admin")
 def create_admin(db: Session = Depends(database.get_db)):
-    admin = schemas.UserCreate(username="admin", password="admin123")
+    admin = schemas.UserCreate(username="admin", password="contech369*-")
     db_admin = crud.create_user(db, admin)
     db_admin.is_admin = True
     db.commit()
     return {"status": "admin created"}
+
+
+app = ProxyHeaderFixMiddleware(app)

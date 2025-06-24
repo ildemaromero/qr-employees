@@ -4,10 +4,12 @@ import hashlib
 import os
 from dotenv import load_dotenv
 from cryptography.fernet import Fernet
+from pathlib import Path
 
-load_dotenv()
+load_dotenv(dotenv_path=Path("/home/projects/qr-employees/.env"))
 
 password = os.getenv("PASSWORD")
+
 key = base64.urlsafe_b64encode(hashlib.sha256(password.encode()).digest())
 cipher = Fernet(key)
 
