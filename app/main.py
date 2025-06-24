@@ -51,7 +51,7 @@ templates.env.globals.update(add_current_user_to_context=add_current_user_to_con
 async def login_page(request: Request):
     remember_me = request.cookies.get("remember_me")
     if remember_me == "true":
-        response = RedirectResponse(url="/dashboard", status_code=303)
+        response = RedirectResponse(url=request.url_for("dashboard"), status_code=303)
         return response
     
     return templates.TemplateResponse("login.html", {"request": request})
@@ -70,7 +70,7 @@ async def login(request: Request, db: Session = Depends(database.get_db)):
         })
     
     access_token = auth.create_access_token(data={"sub": user.username})
-    response = RedirectResponse(url="/dashboard", status_code=303)
+    response = RedirectResponse(url=request.url_for("dashboard"), status_code=303)
     remember_me = form_data.get("remember-me") == "on"
     print(f"this remember me {remember_me}")
     if remember_me:
@@ -117,8 +117,8 @@ async def user_management(
     })
 
 @app.get("/logout")
-async def logout():
-    response = RedirectResponse(url="/")
+async def logout(request: Request):
+    response = RedirectResponse(url=request.url_for(""))
     response.delete_cookie("access_token")
     response.delete_cookie("remember_me")
     return response
