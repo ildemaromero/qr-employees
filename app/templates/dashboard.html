@@ -27,8 +27,18 @@
                 <!-- QR Code Display Area -->
                 <div id="qrResult" class="mt-6 hidden">
                     <h3 class="text-lg font-semibold text-main-blue mb-2">QR Generado:</h3>
-                    <div class="p-4 border rounded-md bg-gray-50 flex justify-center">
+                    <div class="p-4 border rounded-md bg-gray-50 flex flex-col items-center">
                         <img id="qrImage" src="" alt="QR Code" class="w-64 h-64">
+                        
+                        <!-- Botones de acción -->
+                        <div class="mt-4 flex space-x-4">
+                            <button id="downloadBtn" class="flex items-center bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded transition">
+                                <span class="mr-2">⬇️ Descargar</span>
+                            </button>
+                            <button id="printBtn" class="flex items-center bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded transition">
+                                <span class="mr-2">🖨️ Imprimir</span>
+                            </button>
+                        </div>
                     </div>
                     <p class="mt-2 text-sm text-gray-600">Escanea este código QR para acceder a la información</p>
                 </div>
@@ -41,10 +51,13 @@
 </div>
 
 <script>
+let currentQrUrl = '';
+let submittedDocumentNumber = '';
+
 document.getElementById('qrForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
-    const documentNumber = document.getElementById('document_number').value;
+    submittedDocumentNumber = document.getElementById('document_number').value;
     const qrResult = document.getElementById('qrResult');
     const qrImage = document.getElementById('qrImage');
     const errorMessage = document.getElementById('errorMessage');
@@ -54,7 +67,6 @@ document.getElementById('qrForm').addEventListener('submit', async function(e) {
     errorMessage.classList.add('hidden');
     
     try {
-
         const basePath = "{{ request.scope.get('root_path', '') }}";
 
         const response = await fetch(`${basePath}/generate-qr`, {
@@ -62,16 +74,21 @@ document.getElementById('qrForm').addEventListener('submit', async function(e) {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: `document_number=${encodeURIComponent(documentNumber)}`
+            body: `document_number=${encodeURIComponent(submittedDocumentNumber)}`
         });        
         
         if (response.ok) {
-            // Create object URL from the response blob
-            const blob = await response.blob();
-            const imageUrl = URL.createObjectURL(blob);
+            // Liberar la URL anterior si existe
+            if (currentQrUrl) {
+                URL.revokeObjectURL(currentQrUrl);
+            }
             
-            // Display the QR code
-            qrImage.src = imageUrl;
+            // Crear nueva URL del QR
+            const blob = await response.blob();
+            currentQrUrl = URL.createObjectURL(blob);
+            
+            // Mostrar el QR
+            qrImage.src = currentQrUrl;
             qrResult.classList.remove('hidden');
         } else {
             throw new Error('No se encontró el empleado');
@@ -82,5 +99,35 @@ document.getElementById('qrForm').addEventListener('submit', async function(e) {
         console.error('Error:', error);
     }
 });
+
+document.getElementById('downloadBtn').addEventListener('click', function() {
+    if (!currentQrUrl || !submittedDocumentNumber) return;
+    
+    const fileName = `qr-${submittedDocumentNumber}.png`;
+    
+    const link = document.createElement('a');
+    link.href = currentQrUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+});
+
+document.getElementById('printBtn').addEventListener('click', function() {
+    if (!currentQrUrl) return;
+    
+    const printWindow = window.open('', '', 'width=600,height=600');
+    printWindow.document.write(`
+        <img src="${currentQrUrl}" style="display:block;margin:auto;max-width:100%;">
+        <script>
+            setTimeout(() => {
+                window.print();
+                window.close();
+            }, 300);
+        <\/script>
+    `);
+    printWindow.document.close();
+});
+
 </script>
 {% endblock %}
