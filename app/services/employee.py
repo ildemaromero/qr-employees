@@ -18,20 +18,21 @@ class EmployeeService:
         # URL-encode the password to handle special characters
         encoded_password = urllib.parse.quote_plus(password)
         
-        # Create ODBC connection string
+        # Create SQLAlchemy engine with ODBC
         connection_string = (
             f"DRIVER={{{driver}}};"
             f"SERVER={server};"
             f"DATABASE={database};"
             f"UID={username};"
             f"PWD={encoded_password};"
+            f"TrustServerCertificate=yes;"
         )
-        
-        # Create SQLAlchemy engine with ODBC
+
+        # Create ODBC connection string
         self.engine = create_engine(
             f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(connection_string)}",
             pool_pre_ping=True,
-            echo=False  # Set to True for debugging
+            echo=False
         )
         self.Session = sessionmaker(bind=self.engine)
     
