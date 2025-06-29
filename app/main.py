@@ -143,7 +143,7 @@ async def generate_qr(
     if not cod_emp:
         raise HTTPException(status_code=404, detail="Empleado no encontrado.")
     
-    qr = Qr(request.url_for("employee-data"))
+    qr = Qr(str(request.base_url).rstrip("/") + request.scope.get("root_path", ""))
     qr_image, qr_path = qr.generate(cod_emp)
     
     return FileResponse(qr_path, media_type="image/png", filename=qr_image)
