@@ -37,6 +37,8 @@ class EmployeeService:
         self.Session = sessionmaker(bind=self.engine)
     
     def get_employee_code(self, document_number: str) -> Optional[str]:
+        document_number = document_number.replace(".", "")
+        
         query = text("""
             SELECT
                 e.cod_emp
