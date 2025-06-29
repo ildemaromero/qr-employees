@@ -43,7 +43,7 @@ class EmployeeService:
             FROM
                 snemple AS e
             WHERE
-                e.ci = :document_number
+                REPLACE(e.ci, '.', '') = :document_number
         """)
         
         with self.Session() as session:
