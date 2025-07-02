@@ -46,6 +46,9 @@ class EmployeeService:
                 snemple AS e
             WHERE
                 REPLACE(e.ci, '.', '') = :document_number
+            ORDER BY
+                e.cod_emp DESC
+            LIMIT 1
         """)
         
         with self.Session() as session:
