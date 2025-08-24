@@ -55,6 +55,20 @@ class EmployeeService:
             result = session.execute(query, {'document_number': document_number}).fetchone()
             return result[0] if result else None
         
+    def get_all_code_numbers(self) -> list[str]:
+        query = text("""
+            SELECT
+                e.cod_emp as cod_emp
+            FROM
+                snemple AS e
+            ORDER BY
+                e.cod_emp
+        """)
+        
+        with self.Session() as session:
+            results = session.execute(query).fetchall()
+            return [result[0] for result in results] if results else []
+        
     def get_employee_data(self, cod_emp: str) -> Optional[Dict]:
         query = text("""
             SELECT
